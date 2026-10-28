@@ -67,12 +67,19 @@ function Install-Luma {
         if ($running) { throw "Luma is running from $dir. Close it and run the script again." }
     }
 
+    # The shortcut is ours only when it points into this install folder (an MSI or another copy may own Luma.lnk).
+    function Test-ShortcutOurs {
+        if (-not (Test-Path $shortcut)) { return $false }
+        $target = (New-Object -ComObject WScript.Shell).CreateShortcut($shortcut).TargetPath
+        return ($target -and $target.StartsWith($InstallDir.TrimEnd("\") + "\", [StringComparison]::OrdinalIgnoreCase))
+    }
+
     if ($Uninstall) {
         Assert-LumaFolder $InstallDir
         Assert-NotRunning $InstallDir
         if (Test-Path $InstallDir) { Remove-Item -LiteralPath $InstallDir -Recurse -Force }
-        if (Test-Path $shortcut) { Remove-Item -LiteralPath $shortcut -Force }
-        Say "removed $InstallDir and the Start menu shortcut. Sessions and settings in $(Join-Path $env:LOCALAPPDATA 'Luma') are kept."
+        if (Test-ShortcutOurs) { Remove-Item -LiteralPath $shortcut -Force }
+        Say "removed $InstallDir and its Start menu shortcut. Sessions and settings in $(Join-Path $env:LOCALAPPDATA 'Luma') are kept."
         return
     }
 
@@ -97,7 +104,9 @@ function Install-Luma {
         $sumText = (Invoke-WebRequest -Uri $sumAsset.browser_download_url -UseBasicParsing -Headers @{ "User-Agent" = "luma-install" }).Content
         if ($sumText -is [byte[]]) { $sumText = [Text.Encoding]::ASCII.GetString($sumText) }
         $expected = ($sumText.Trim() -split "\s+")[0].ToLowerInvariant()
-        $actual = (Get-FileHash -LiteralPath $zip -Algorithm SHA256).Hash.ToLowerInvariant()
+        $sha = [Security.Cryptography.SHA256]::Create()
+        $stream = [IO.File]::OpenRead($zip)
+        try { $actual = (-join ($sha.ComputeHash($stream) | ForEach-Object { $_.ToString("x2") })) } finally { $stream.Dispose(); $sha.Dispose() }
         if ($expected -notmatch "^[0-9a-f]{64}$" -or $actual -ne $expected) {
             throw "SHA256 check failed (expected $expected, got $actual). Nothing was installed."
         }
@@ -128,7 +137,9 @@ function Install-Luma {
         Remove-Item -LiteralPath $work -Recurse -Force -ErrorAction SilentlyContinue
     }
 
-    if (-not $NoShortcut) {
+    if (-not $NoShortcut -and (Test-Path $shortcut) -and -not (Test-ShortcutOurs)) {
+        Say "kept the existing Start menu shortcut, it belongs to another Luma install."
+    } elseif (-not $NoShortcut) {
         $shell = New-Object -ComObject WScript.Shell
         $link = $shell.CreateShortcut($shortcut)
         $link.TargetPath = Join-Path $InstallDir "luma.exe"
