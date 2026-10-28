@@ -36,5 +36,5 @@ Manual install: download `Luma-<version>-win-x64.zip` from [Releases](https://gi
 
 ## Repository layout
 
-- `site/script/install.ps1`: the installer, served by Vercel at `https://getluma.nohelll.com/script/install.ps1`. `site/` is the only folder Vercel publishes (`vercel.json`).
+- `site/`: the only folder Vercel publishes (`vercel.json`): `index.html` (a one page landing at https://getluma.nohelll.com) and `script/install.ps1` (the installer).
 - Releases: the builds, published here by the CI of the private Luma repository.

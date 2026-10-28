@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Luma: video to 3D point cloud</title>
+<meta name="description" content="Luma turns a video into a colored 3D point cloud. Native Windows 11 app. Install with one PowerShell line.">
+<style>
+  :root {
+    --canvas: #0E0E13; --base: #1A1A23; --raised: #21212C; --hover: #2A2A37;
+    --text: #DCDCE8; --strong: #EEEEF8; --muted: #9090A6; --accent: #A99BFF; --on-accent: #14121F;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; }
+  body {
+    background: radial-gradient(1200px 600px at 50% -10%, #1d1a33 0%, var(--canvas) 60%);
+    color: var(--text);
+    font: 16px/1.55 "Segoe UI Variable", "Segoe UI", system-ui, sans-serif;
+    display: flex; align-items: center; justify-content: center; padding: 32px 20px;
+  }
+  main { width: 100%; max-width: 640px; }
+  .mark { width: 44px; height: 44px; border-radius: 12px; background: var(--accent); display: grid; place-items: center; margin-bottom: 20px; }
+  .mark span { width: 18px; height: 18px; border-radius: 50%; border: 3px solid var(--on-accent); }
+  h1 { color: var(--strong); font-size: 40px; line-height: 1.1; margin: 0 0 8px; letter-spacing: -0.02em; }
+  .lead { color: var(--muted); font-size: 18px; margin: 0 0 32px; }
+  .card { background: var(--base); border-radius: 14px; padding: 20px; }
+  .label { color: var(--muted); font-size: 13px; margin: 0 0 10px; }
+  .cmd { display: flex; gap: 10px; align-items: stretch; }
+  code {
+    flex: 1; background: var(--raised); color: var(--strong); border-radius: 10px; padding: 12px 14px;
+    font: 14px/1.4 "Cascadia Mono", Consolas, monospace; overflow-x: auto; white-space: nowrap;
+  }
+  button {
+    background: var(--accent); color: var(--on-accent); border: 0; border-radius: 10px; padding: 0 16px;
+    font: 600 14px "Segoe UI", system-ui, sans-serif; cursor: pointer;
+  }
+  button:hover { filter: brightness(1.08); }
+  button:focus-visible, a:focus-visible { outline: 2px solid var(--strong); outline-offset: 2px; }
+  ul { margin: 16px 0 0; padding-left: 18px; color: var(--muted); font-size: 14px; }
+  li { margin: 4px 0; }
+  a { color: var(--accent); cursor: pointer; }
+  footer { margin-top: 28px; color: var(--muted); font-size: 13px; }
+</style>
+</head>
+<body>
+<main>
+  <div class="mark" aria-hidden="true"><span></span></div>
+  <h1>Luma</h1>
+  <p class="lead">Turns a video into a colored 3D point cloud. Native Windows 11 app.</p>
+
+  <section class="card" aria-labelledby="install">
+    <p class="label" id="install">Install or update, in PowerShell:</p>
+    <div class="cmd">
+      <code id="line">irm https://getluma.nohelll.com/script/install.ps1 | iex</code>
+      <button type="button" id="copy">Copy</button>
+    </div>
+    <ul>
+      <li>Installs the newest build into your user folder, no administrator rights needed. The download is checked against its SHA256.</li>
+      <li>Needs Windows 11 (64 bit) and a GPU with OpenGL 4.5.</li>
+      <li>Development builds, not code signed yet: Windows may show "Unknown publisher" on first start.</li>
+      <li><a href="/script/install.ps1">Read the script</a> before running it, or <a href="https://github.com/FIEF-nohell/luma-releases/releases">download a build by hand</a>.</li>
+    </ul>
+  </section>
+
+  <footer>Uninstall: <code style="display:inline;padding:2px 6px;font-size:12px">$env:LUMA_UNINSTALL="1"; irm https://getluma.nohelll.com/script/install.ps1 | iex</code></footer>
+</main>
+<script>
+  document.getElementById("copy").addEventListener("click", async function () {
+    const text = document.getElementById("line").textContent;
+    try { await navigator.clipboard.writeText(text); this.textContent = "Copied"; }
+    catch (e) { this.textContent = "Select and copy"; }
+    setTimeout(() => { this.textContent = "Copy"; }, 1600);
+  });
+</script>
+</body>
+</html>
