@@ -3,32 +3,83 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark">
 <title>Luma</title>
 <link rel="icon" href="/favicon.ico" sizes="any">
 <style>
+  *, *::before, *::after { box-sizing: border-box; }
+  html, body { height: 100%; }
   body {
-    margin: 0; min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px;
-    box-sizing: border-box; background: #0E0E13; color: #9090A6; font: 14px/1.5 "Segoe UI", system-ui, sans-serif;
+    margin: 0; min-height: 100vh; min-height: 100dvh;
+    display: grid; place-items: center; padding: clamp(16px, 4vw, 48px);
+    background:
+      radial-gradient(60vmax 45vmax at 18% 12%, rgba(169, 155, 255, 0.16), transparent 70%),
+      radial-gradient(55vmax 40vmax at 85% 90%, rgba(78, 201, 176, 0.10), transparent 70%),
+      #0E0E13;
+    color: #9090A6; font: clamp(14px, 0.35vw + 12.5px, 16px)/1.55 "Segoe UI Variable", "Segoe UI", system-ui, sans-serif;
   }
-  main { width: 100%; max-width: 640px; }
+  main {
+    width: 100%; max-width: 720px;
+    background: rgba(24, 24, 32, 0.78); border: 1px solid #2A2A38; border-radius: 14px;
+    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.45), 0 0 0 1px rgba(255, 255, 255, 0.02) inset;
+    overflow: hidden;
+  }
+  .bar {
+    display: flex; align-items: center; gap: 8px; padding: 10px 16px;
+    background: #181820; border-bottom: 1px solid #2A2A38; font-size: 12px; color: #6E6E86;
+  }
+  .bar img { width: 16px; height: 16px; }
+  .content { padding: clamp(24px, 4vw, 40px); }
+  h1 {
+    margin: 0 0 6px; color: #EEEEF8; font-weight: 600; letter-spacing: -0.02em;
+    font-size: clamp(28px, 3vw + 12px, 44px); line-height: 1.1;
+  }
+  h1 span {
+    background: linear-gradient(90deg, #A99BFF, #4EC9B0); -webkit-background-clip: text; background-clip: text; color: transparent;
+  }
+  .lead { margin: 0 0 clamp(20px, 3vh, 32px); max-width: 52ch; }
   p { margin: 0 0 8px; }
+  .label { color: #C8C8DA; font-weight: 600; font-size: 13px; }
+  .label.muted { color: #8A8AA0; font-weight: 400; }
   .row { display: flex; gap: 8px; margin-bottom: 24px; }
+  .row:last-of-type { margin-bottom: 0; }
   code {
-    flex: 1; background: #21212C; color: #EEEEF8; border-radius: 8px; padding: 10px 12px;
+    flex: 1; min-width: 0; background: #1B1B24; color: #EEEEF8; border: 1px solid #2A2A38; border-radius: 8px; padding: 12px 14px;
     font: 13px/1.4 "Cascadia Mono", Consolas, monospace; overflow-x: auto; white-space: nowrap;
   }
   button {
-    background: #A99BFF; color: #14121F; border: 0; border-radius: 8px; padding: 0 14px;
+    flex: none; min-width: 84px; background: #A99BFF; color: #14121F; border: 0; border-radius: 8px; padding: 0 18px;
     font: 600 13px "Segoe UI", system-ui, sans-serif; cursor: pointer;
+    box-shadow: 0 6px 18px rgba(169, 155, 255, 0.28); transition: background 120ms, transform 120ms;
+  }
+  button:hover { background: #BBB0FF; }
+  button:active { transform: translateY(1px); }
+  button:focus-visible { outline: 2px solid #EEEEF8; outline-offset: 2px; }
+  .secondary code { color: #B4B4C8; }
+  .secondary button { background: #2A2A38; color: #EEEEF8; box-shadow: none; }
+  .secondary button:hover { background: #34344A; }
+  .foot {
+    display: flex; flex-wrap: wrap; gap: 6px 18px; padding: 12px clamp(24px, 4vw, 40px);
+    border-top: 1px solid #2A2A38; font-size: 12px; color: #6E6E86;
+  }
+  @media (max-width: 520px) {
+    .row { flex-direction: column; }
+    button { min-height: 40px; }
   }
 </style>
 </head>
 <body>
 <main>
-  <p>Install or update (PowerShell)</p>
-  <div class="row"><code>irm https://getluma.nohelll.com/script/install.ps1 | iex</code><button type="button">Copy</button></div>
-  <p>Uninstall (PowerShell)</p>
-  <div class="row"><code>$env:LUMA_UNINSTALL="1"; irm https://getluma.nohelll.com/script/install.ps1 | iex</code><button type="button">Copy</button></div>
+  <div class="bar"><img src="/favicon.ico" alt="">Luma</div>
+  <div class="content">
+    <h1>Video in, <span>point cloud</span> out.</h1>
+    <p class="lead">Luma is a Windows app that turns a video into a colored 3D point cloud. Install it with one line in PowerShell.</p>
+    <p class="label">Install or update (PowerShell)</p>
+    <div class="row"><code>irm https://getluma.nohelll.com/script/install.ps1 | iex</code><button type="button">Copy</button></div>
+    <p class="label muted">Uninstall (PowerShell)</p>
+    <div class="row secondary"><code>$env:LUMA_UNINSTALL="1"; irm https://getluma.nohelll.com/script/install.ps1 | iex</code><button type="button">Copy</button></div>
+  </div>
+  <div class="foot"><span>Windows 11, 64-bit</span><span>Paste into PowerShell and press Enter</span></div>
 </main>
 <script>
   document.querySelectorAll("button").forEach(function (b) {
