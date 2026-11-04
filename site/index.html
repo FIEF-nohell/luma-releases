@@ -62,6 +62,9 @@
     display: flex; flex-wrap: wrap; gap: 6px 18px; padding: 12px clamp(24px, 4vw, 40px);
     border-top: 1px solid #2A2A38; font-size: 12px; color: #6E6E86;
   }
+  .build { flex-basis: 100%; min-width: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+  .build a { color: inherit; text-decoration: none; }
+  .build a:hover { color: #C8C8DA; text-decoration: underline; }
   @media (max-width: 520px) {
     .row { flex-direction: column; }
     button { min-height: 40px; }
@@ -79,7 +82,7 @@
     <p class="label muted">Uninstall (PowerShell)</p>
     <div class="row secondary"><code>$env:LUMA_UNINSTALL="1"; irm https://getluma.nohelll.com/script/install.ps1 | iex</code><button type="button">Copy</button></div>
   </div>
-  <div class="foot"><span>Windows 11, 64-bit</span><span>Paste into PowerShell and press Enter</span></div>
+  <div class="foot"><span>Windows 11, 64-bit</span><span>Paste into PowerShell and press Enter</span><span class="build" id="build">Latest build: checking</span></div>
 </main>
 <script>
   document.querySelectorAll("button").forEach(function (b) {
@@ -89,6 +92,50 @@
       setTimeout(function () { b.textContent = "Copy"; }, 1500);
     });
   });
+
+  // Latest build: the newest release of the public repository (the one the install script installs), shown in the
+  // visitor's local time. If GitHub cannot be reached or rate limits, the line links to the releases page instead.
+  (function () {
+    var el = document.getElementById("build");
+    var releases = "https://github.com/FIEF-nohell/luma-releases/releases";
+    var months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    function two(n) { return (n < 10 ? "0" : "") + n; }
+    function link(href, text) {
+      var a = document.createElement("a"); a.href = href; a.textContent = text; return a;
+    }
+    function ago(t) {
+      var s = (t - Date.now()) / 1000, rtf = new Intl.RelativeTimeFormat("en", { numeric: "auto" });
+      var steps = [[60, "second"], [60, "minute"], [24, "hour"], [7, "day"], [4.345, "week"], [12, "month"], [Infinity, "year"]];
+      for (var i = 0; i < steps.length; i++) {
+        if (Math.abs(s) < steps[i][0]) return rtf.format(Math.round(s), steps[i][1]);
+        s /= steps[i][0];
+      }
+    }
+    function fallback() {
+      el.textContent = "Latest build: ";
+      el.appendChild(link(releases, "see the releases on GitHub"));
+    }
+    var ctrl = window.AbortController ? new AbortController() : null;
+    var timer = setTimeout(function () { if (ctrl) ctrl.abort(); }, 8000);
+    fetch("https://api.github.com/repos/FIEF-nohell/luma-releases/releases/latest",
+          { headers: { Accept: "application/vnd.github+json" }, signal: ctrl ? ctrl.signal : undefined })
+      .then(function (r) { if (!r.ok) throw new Error("HTTP " + r.status); return r.json(); })
+      .then(function (rel) {
+        clearTimeout(timer);
+        var t = new Date(rel.published_at);
+        if (!rel.tag_name || isNaN(t.getTime())) throw new Error("unexpected response");
+        var stamp = t.getDate() + " " + months[t.getMonth()] + " " + t.getFullYear() + ", " + two(t.getHours()) + ":" + two(t.getMinutes());
+        var time = document.createElement("time");
+        time.dateTime = t.toISOString(); time.title = t.toISOString().replace(".000Z", "Z") + " (UTC)";
+        el.textContent = "Latest build: ";
+        el.appendChild(time);
+        el.appendChild(document.createTextNode(", "));
+        el.appendChild(link(rel.html_url || releases, rel.tag_name));
+        function tick() { time.textContent = stamp + " (" + ago(t.getTime()) + ")"; }
+        tick(); setInterval(tick, 60000);
+      })
+      .catch(function () { clearTimeout(timer); fallback(); });
+  })();
 </script>
 </body>
 </html>
